@@ -36,7 +36,6 @@ import Layout from '../layouts/Layout.astro';
           type="text"
           class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           required
-          disabled
           autocomplete="off"
         />
       </div>
@@ -60,15 +59,13 @@ import Layout from '../layouts/Layout.astro';
     const manager = {
       peer: undefined as Peer | undefined,
       clientPeerId: uuid(),
-      remotePeerId: uuid(),
+      remotePeerId: undefined as string | undefined,
     };
 
     function init() {
       manager.peer = new Peer(manager.clientPeerId);
       (document.getElementById('client-peer-id') as HTMLInputElement).value =
         manager.clientPeerId;
-      (document.getElementById('remote-peer-id') as HTMLInputElement).value =
-        manager.remotePeerId;
     }
 
     init();
@@ -82,6 +79,26 @@ import Layout from '../layouts/Layout.astro';
         }, wait);
       };
     };
+
+    function handleInputChanges(event: Event) {
+      const id = (event?.target as HTMLInputElement).value;
+      if (manager.peer) {
+        manager.peer.destroy();
+      }
+      manager.peer = new Peer(id);
+    }
+
+    const handleInputChangesWithDebounce = debounce(handleInputChanges, 600);
+
+    const remotePeerIdElement = document.getElementById('remote-peer-id');
+    remotePeerIdElement?.addEventListener(
+      'keyup',
+      handleInputChangesWithDebounce
+    );
+    remotePeerIdElement?.addEventListener(
+      'change',
+      handleInputChangesWithDebounce
+    );
 
     async function startCall() {
       try {
