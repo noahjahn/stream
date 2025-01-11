@@ -54,7 +54,7 @@ import Layout from '../layouts/Layout.astro';
     <video id="video"></video>
   </main>
   <script>
-    import { Peer } from 'https://esm.sh/peerjs@1.5.4?bundle-deps';
+    import { Peer } from 'peerjs';
 
     const debounce = (callback: Function, wait: number) => {
       let timeoutId: number | undefined = undefined;
@@ -67,41 +67,39 @@ import Layout from '../layouts/Layout.astro';
     };
 
     async function startCall() {
-      let captureStream = null;
-
       try {
-        captureStream = await navigator.mediaDevices.getDisplayMedia({
+        const captureStream = await navigator.mediaDevices.getDisplayMedia({
           video: {
             displaySurface: 'browser',
           },
-          audio: {
-            suppressLocalAudioPlayback: false,
-          },
-          preferCurrentTab: false,
-          selfBrowserSurface: 'exclude',
-          systemAudio: 'include',
-          surfaceSwitching: 'include',
-          monitorTypeSurfaces: 'include',
+          // audio: {
+          //   suppressLocalAudioPlayback: false,
+          // },
+          // preferCurrentTab: false,
+          // selfBrowserSurface: 'exclude',
+          // systemAudio: 'include',
+          // surfaceSwitching: 'include',
+          // monitorTypeSurfaces: 'include',
         });
+        (document.getElementById('video') as HTMLMediaElement).srcObject =
+          captureStream;
+
+        (document.getElementById('video') as HTMLMediaElement).play();
+
+        const peer = new Peer(
+          (document.getElementById('client-id') as HTMLInputElement)!.value
+        );
+        peer.call(
+          (document.getElementById('peer-id') as HTMLInputElement)!.value,
+          captureStream
+        );
+
+        console.log('called');
+
+        return captureStream;
       } catch (err) {
         console.error(`Error: ${err}`);
       }
-      (document.getElementById('video') as HTMLMediaElement).srcObject =
-        captureStream;
-
-      (document.getElementById('video') as HTMLMediaElement).play();
-
-      const peer = new Peer(
-        (document.getElementById('client-id') as HTMLInputElement)!.value
-      );
-      peer.call(
-        (document.getElementById('peer-id') as HTMLInputElement)!.value,
-        captureStream
-      );
-
-      console.log('called');
-
-      return captureStream;
     }
 
     async function answerCall() {
@@ -109,7 +107,7 @@ import Layout from '../layouts/Layout.astro';
         (document.getElementById('client-id') as HTMLInputElement)!.value
       );
       peer.on('call', (call) => {
-        call.on('stream', function (remoteStream) {
+        call.on('stream', function (remoteStream: MediaProvider | null) {
           (document.getElementById('video') as HTMLMediaElement).srcObject =
             remoteStream;
 
