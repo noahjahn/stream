@@ -9,6 +9,20 @@ import Layout from '../layouts/Layout.astro';
         >Nobey's stream test play ground</span
       >
     </h1>
+
+    <p class="instructions rounded-lg">
+      <strong>Instructions for sharing your screen</strong>: Enter the peer ID
+      of the person you want to send your stream to, then click the button below
+      to start sending your stream. You will be prompted which window or screen
+      to share.
+    </p>
+
+    <p class="instructions rounded-lg">
+      <strong>Instructions for receiving a stream</strong>: You will be prompted
+      to accept the incoming stream. Only accept streams from people you trust.
+      You <i>do not</i> have to enter a peer ID to receive a stream.
+    </p>
+
     <div class="flex flex-col md:flex-row md:space-x-4 max-md:space-y-4 mb-4">
       <div class="w-full md:w-8/12">
         <label
@@ -47,8 +61,8 @@ import Layout from '../layouts/Layout.astro';
         >Send stream</button
       >
     </div>
+    <video id="video"></video>
   </main>
-  <video id="video"></video>
 </Layout>
 <script>
   import { Peer } from 'peerjs';
@@ -120,10 +134,6 @@ import Layout from '../layouts/Layout.astro';
           displaySurface: 'browser',
         },
       });
-
-      const videoElement = document.getElementById('video') as HTMLMediaElement;
-      videoElement.srcObject = captureStream;
-      videoElement.play();
 
       manager.peer?.call(manager.remotePeerId!, captureStream);
 
