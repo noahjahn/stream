@@ -20,8 +20,8 @@ import Layout from '../layouts/Layout.astro';
           id="client-peer-id"
           type="text"
           class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          placeholder="nobeys-testing-peer-1"
           required
+          disabled
           autocomplete="off"
         />
       </div>
@@ -35,8 +35,8 @@ import Layout from '../layouts/Layout.astro';
           id="remote-peer-id"
           type="text"
           class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          placeholder="nobeys-testing-peer-2"
           required
+          disabled
           autocomplete="off"
         />
       </div>
@@ -55,12 +55,23 @@ import Layout from '../layouts/Layout.astro';
   </main>
   <script>
     import { Peer } from 'peerjs';
+    import { v4 as uuid } from 'uuid';
 
     const manager = {
       peer: undefined as Peer | undefined,
-      clientPeerId: undefined as string | undefined,
-      remotePeerId: undefined as string | undefined,
+      clientPeerId: uuid(),
+      remotePeerId: uuid(),
     };
+
+    function init() {
+      manager.peer = new Peer(manager.clientPeerId);
+      (document.getElementById('client-peer-id') as HTMLInputElement).value =
+        manager.clientPeerId;
+      (document.getElementById('remote-peer-id') as HTMLInputElement).value =
+        manager.remotePeerId;
+    }
+
+    init();
 
     const debounce = (callback: Function, wait: number) => {
       let timeoutId: number | undefined = undefined;
@@ -71,38 +82,6 @@ import Layout from '../layouts/Layout.astro';
         }, wait);
       };
     };
-
-    function handleInputChanges(event: Event) {
-      const id = (event?.target as HTMLInputElement).value;
-
-      if (manager.peer) {
-        manager.peer.destroy();
-      }
-
-      manager.peer = new Peer(id);
-    }
-
-    const handleInputChangesWithDebounce = debounce(handleInputChanges, 600);
-
-    const clientPeerIdElement = document.getElementById('client-peer-id');
-    clientPeerIdElement?.addEventListener(
-      'keyup',
-      handleInputChangesWithDebounce
-    );
-    clientPeerIdElement?.addEventListener(
-      'change',
-      handleInputChangesWithDebounce
-    );
-
-    const remotePeerIdElement = document.getElementById('remote-peer-id');
-    remotePeerIdElement?.addEventListener(
-      'keyup',
-      handleInputChangesWithDebounce
-    );
-    remotePeerIdElement?.addEventListener(
-      'change',
-      handleInputChangesWithDebounce
-    );
 
     async function startCall() {
       try {
@@ -118,9 +97,9 @@ import Layout from '../layouts/Layout.astro';
         videoElement.srcObject = captureStream;
         videoElement.play();
 
-        manager.peer?.call(manager.remotePeerId!, captureStream);
+        console.log('calling peer', manager.remotePeerId!);
 
-        console.log('called');
+        manager.peer?.call(manager.remotePeerId!, captureStream);
 
         return captureStream;
       } catch (err) {
@@ -129,14 +108,22 @@ import Layout from '../layouts/Layout.astro';
     }
 
     async function answerCall() {
-      manager.peer?.on('call', (call) => {
-        console.log(call);
-        call.on('stream', function (remoteStream: MediaProvider | null) {
-          console.log('stream');
-          (document.getElementById('video') as HTMLMediaElement).srcObject =
-            remoteStream;
+      try {
+        console.log('answering call');
+        console.log(manager.peer);
+        console.log(manager.peer?.id);
+        manager.peer?.on('call', (call) => {
+          console.log(call);
+          call.answer();
+          call.on('stream', function (remoteStream: MediaProvider | null) {
+            console.log('stream');
+            (document.getElementById('video') as HTMLMediaElement).srcObject =
+              remoteStream;
+          });
         });
-      });
+      } catch (err) {
+        console.error(`Error: ${err}`);
+      }
     }
 
     const startCallWithDebounce = debounce(startCall, 600);
