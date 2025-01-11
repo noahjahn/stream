@@ -12,12 +12,12 @@ import Layout from '../layouts/Layout.astro';
     <div class="flex flex-col md:flex-row md:space-x-4 max-md:space-y-4 mb-4">
       <div class="w-full md:w-8/12">
         <label
-          for="client-id"
+          for="client-peer-id"
           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >Your ID</label
         >
         <input
-          id="client-id"
+          id="client-peer-id"
           type="text"
           class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           placeholder="nobeys-testing-peer-1"
@@ -27,12 +27,12 @@ import Layout from '../layouts/Layout.astro';
       </div>
       <div class="w-full md:w-8/12">
         <label
-          for="peer-id"
+          for="remote-peer-id"
           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >Peer ID</label
         >
         <input
-          id="peer-id"
+          id="remote-peer-id"
           type="text"
           class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           placeholder="nobeys-testing-peer-2"
@@ -56,6 +56,12 @@ import Layout from '../layouts/Layout.astro';
   <script>
     import { Peer } from 'peerjs';
 
+    const manager = {
+      peer: undefined as Peer | undefined,
+      clientPeerId: undefined as string | undefined,
+      remotePeerId: undefined as string | undefined,
+    };
+
     const debounce = (callback: Function, wait: number) => {
       let timeoutId: number | undefined = undefined;
       return (...args: unknown[]) => {
@@ -66,33 +72,53 @@ import Layout from '../layouts/Layout.astro';
       };
     };
 
+    function handleInputChanges(event: Event) {
+      const id = (event?.target as HTMLInputElement).value;
+
+      if (manager.peer) {
+        manager.peer.destroy();
+      }
+
+      manager.peer = new Peer(id);
+    }
+
+    const handleInputChangesWithDebounce = debounce(handleInputChanges, 600);
+
+    const clientPeerIdElement = document.getElementById('client-peer-id');
+    clientPeerIdElement?.addEventListener(
+      'keyup',
+      handleInputChangesWithDebounce
+    );
+    clientPeerIdElement?.addEventListener(
+      'change',
+      handleInputChangesWithDebounce
+    );
+
+    const remotePeerIdElement = document.getElementById('remote-peer-id');
+    remotePeerIdElement?.addEventListener(
+      'keyup',
+      handleInputChangesWithDebounce
+    );
+    remotePeerIdElement?.addEventListener(
+      'change',
+      handleInputChangesWithDebounce
+    );
+
     async function startCall() {
       try {
         const captureStream = await navigator.mediaDevices.getDisplayMedia({
           video: {
             displaySurface: 'browser',
           },
-          // audio: {
-          //   suppressLocalAudioPlayback: false,
-          // },
-          // preferCurrentTab: false,
-          // selfBrowserSurface: 'exclude',
-          // systemAudio: 'include',
-          // surfaceSwitching: 'include',
-          // monitorTypeSurfaces: 'include',
         });
-        (document.getElementById('video') as HTMLMediaElement).srcObject =
-          captureStream;
 
-        (document.getElementById('video') as HTMLMediaElement).play();
+        const videoElement = document.getElementById(
+          'video'
+        ) as HTMLMediaElement;
+        videoElement.srcObject = captureStream;
+        videoElement.play();
 
-        const peer = new Peer(
-          (document.getElementById('client-id') as HTMLInputElement)!.value
-        );
-        peer.call(
-          (document.getElementById('peer-id') as HTMLInputElement)!.value,
-          captureStream
-        );
+        manager.peer?.call(manager.remotePeerId!, captureStream);
 
         console.log('called');
 
@@ -103,19 +129,12 @@ import Layout from '../layouts/Layout.astro';
     }
 
     async function answerCall() {
-      const peer = new Peer(
-        (document.getElementById('client-id') as HTMLInputElement)!.value
-      );
-      console.log(peer);
-      peer.on('call', (call) => {
+      manager.peer?.on('call', (call) => {
         console.log(call);
         call.on('stream', function (remoteStream: MediaProvider | null) {
           console.log('stream');
-
           (document.getElementById('video') as HTMLMediaElement).srcObject =
             remoteStream;
-
-          (document.getElementById('video') as HTMLMediaElement).play();
         });
       });
     }
