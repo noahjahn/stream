@@ -88,10 +88,7 @@ import Layout from '../layouts/Layout.astro';
 
     function handleInputChanges(event: Event) {
       const id = (event?.target as HTMLInputElement).value;
-      if (manager.peer) {
-        manager.peer.destroy();
-      }
-      manager.peer = new Peer(id);
+      manager.remotePeerId = id;
     }
 
     const handleInputChangesWithDebounce = debounce(handleInputChanges, 600);
