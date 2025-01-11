@@ -1,0 +1,10 @@
+services:
+  node:
+    image: node:latest
+    user: node
+    working_dir: /home/node/app
+    command: npm run dev
+    ports:
+      - 4321:4321
+    volumes:
+      - ./:/home/node/app
