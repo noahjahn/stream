@@ -70,6 +70,12 @@ import Layout from '../layouts/Layout.astro';
 
     init();
 
+    setInterval(() => {
+      console.log(manager.peer?.id);
+      console.log(manager.peer?.open);
+      console.log(manager.peer);
+    }, 2000);
+
     const debounce = (callback: Function, wait: number) => {
       let timeoutId: number | undefined = undefined;
       return (...args: unknown[]) => {
@@ -79,14 +85,6 @@ import Layout from '../layouts/Layout.astro';
         }, wait);
       };
     };
-
-    while (true) {
-      debounce(() => {
-        console.log(manager.peer?.id);
-        console.log(manager.peer?.open);
-        console.log(manager.peer);
-      }, 1000);
-    }
 
     function handleInputChanges(event: Event) {
       const id = (event?.target as HTMLInputElement).value;
