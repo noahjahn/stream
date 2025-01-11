@@ -39,186 +39,167 @@ import Layout from '../layouts/Layout.astro';
           autocomplete="off"
         />
       </div>
+    </div>
+    <div class="w-full md:w-8/12">
       <button
         id="call"
-        class="block max-md:w-full mb-4 py-1 px-8 m-auto border rounded-lg dark:bg-green-600 dark:border-green-500 dark:text-white"
-        >Call</button
-      >
-      <button
-        id="answer"
-        class="block max-md:w-full mb-4 py-1 px-8 m-auto border rounded-lg dark:bg-green-600 dark:border-green-500 dark:text-white"
-        >Answer</button
+        class="py-1 px-8 m-auto border rounded-lg dark:bg-green-600 dark:border-green-500 dark:text-white"
+        >Send stream</button
       >
     </div>
-    <video id="video"></video>
   </main>
-  <script>
-    import { Peer } from 'peerjs';
-    import { v4 as uuid } from 'uuid';
-
-    const manager = {
-      peer: undefined as Peer | undefined,
-      clientPeerId: uuid(),
-      remotePeerId: undefined as string | undefined,
-    };
-
-    function init() {
-      manager.peer = new Peer(manager.clientPeerId);
-      (document.getElementById('client-peer-id') as HTMLInputElement).value =
-        manager.clientPeerId;
-    }
-
-    init();
-
-    setInterval(() => {
-      console.log(manager.peer?.id);
-      console.log(manager.peer?.open);
-      console.log(manager.peer);
-    }, 2000);
-
-    const debounce = (callback: Function, wait: number) => {
-      let timeoutId: number | undefined = undefined;
-      return (...args: unknown[]) => {
-        window.clearTimeout(timeoutId);
-        timeoutId = window.setTimeout(() => {
-          callback(...args);
-        }, wait);
-      };
-    };
-
-    function handleInputChanges(event: Event) {
-      const id = (event?.target as HTMLInputElement).value;
-      manager.remotePeerId = id;
-    }
-
-    const handleInputChangesWithDebounce = debounce(handleInputChanges, 600);
-
-    const remotePeerIdElement = document.getElementById('remote-peer-id');
-    remotePeerIdElement?.addEventListener(
-      'keyup',
-      handleInputChangesWithDebounce
-    );
-    remotePeerIdElement?.addEventListener(
-      'change',
-      handleInputChangesWithDebounce
-    );
-
-    async function startCall() {
-      try {
-        const captureStream = await navigator.mediaDevices.getDisplayMedia({
-          video: {
-            displaySurface: 'browser',
-          },
-        });
-
-        const videoElement = document.getElementById(
-          'video'
-        ) as HTMLMediaElement;
-        videoElement.srcObject = captureStream;
-        videoElement.play();
-
-        console.log('calling peer', manager.remotePeerId!);
-
-        manager.peer?.call(manager.remotePeerId!, captureStream);
-
-        return captureStream;
-      } catch (err) {
-        console.error(`Error: ${err}`);
-      }
-    }
-
-    async function answerCall() {
-      try {
-        console.log('answering call');
-        console.log(manager.peer);
-        console.log(manager.peer?.id);
-        manager.peer?.on('call', (call) => {
-          console.log(call);
-          call.answer();
-          call.on('stream', function (remoteStream: MediaProvider | null) {
-            console.log('stream');
-            (document.getElementById('video') as HTMLMediaElement).srcObject =
-              remoteStream;
-          });
-        });
-      } catch (err) {
-        console.error(`Error: ${err}`);
-      }
-    }
-
-    const startCallWithDebounce = debounce(startCall, 600);
-
-    const callButton = document.getElementById('call');
-    callButton?.addEventListener('click', startCallWithDebounce);
-
-    const answerCallWithDebounce = debounce(answerCall, 600);
-
-    const answerButton = document.getElementById('answer');
-    answerButton?.addEventListener('click', answerCallWithDebounce);
-  </script>
-
-  <style>
-    main {
-      margin: auto;
-      padding: 1rem;
-      width: 800px;
-      max-width: calc(100% - 2rem);
-      color: white;
-      font-size: 20px;
-      line-height: 1.6;
-    }
-    .astro-a {
-      position: absolute;
-      top: -32px;
-      left: 50%;
-      transform: translatex(-50%);
-      width: 220px;
-      height: auto;
-      z-index: -1;
-    }
-    h1 {
-      font-size: 4rem;
-      font-weight: 700;
-      line-height: 1;
-      text-align: center;
-      margin-bottom: 1em;
-    }
-    .text-gradient {
-      background-image: var(--accent-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-size: 400%;
-      background-position: 0%;
-    }
-    .instructions {
-      margin-bottom: 2rem;
-      border: 1px solid rgba(var(--accent-light), 25%);
-      background: linear-gradient(
-        rgba(var(--accent-dark), 66%),
-        rgba(var(--accent-dark), 33%)
-      );
-      padding: 1.5rem;
-      border-radius: 8px;
-    }
-    .instructions code {
-      font-size: 0.8em;
-      font-weight: bold;
-      background: rgba(var(--accent-light), 12%);
-      color: rgb(var(--accent-light));
-      border-radius: 4px;
-      padding: 0.3em 0.4em;
-    }
-    .instructions strong {
-      color: rgb(var(--accent-light));
-    }
-    .link-card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
-      gap: 2rem;
-      padding: 0;
-    }
-    img:hover {
-      cursor: pointer;
-    }
-  </style>
+  <video id="video"></video>
 </Layout>
+<script>
+  import { Peer } from 'peerjs';
+  import { v4 as uuid } from 'uuid';
+
+  const manager = {
+    peer: undefined as Peer | undefined,
+    clientPeerId: uuid(),
+    remotePeerId: undefined as string | undefined,
+  };
+
+  function init() {
+    manager.peer = new Peer(manager.clientPeerId);
+    (document.getElementById('client-peer-id') as HTMLInputElement).value =
+      manager.clientPeerId;
+
+    manager.peer.on('call', (call) => {
+      call.answer();
+      call.on('stream', function (remoteStream) {
+        if (
+          confirm(
+            `You are receiving a stream from ${call.peer}, do you want to view their stream (only accept someone you trust)?`
+          )
+        ) {
+          const videoElement = document.getElementById(
+            'video'
+          ) as HTMLMediaElement;
+
+          videoElement.srcObject = remoteStream;
+          videoElement.play();
+        }
+      });
+    });
+  }
+
+  init();
+
+  const debounce = (callback: Function, wait: number) => {
+    let timeoutId: number | undefined = undefined;
+    return (...args: unknown[]) => {
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => {
+        callback(...args);
+      }, wait);
+    };
+  };
+
+  function handleInputChanges(event: Event) {
+    const id = (event?.target as HTMLInputElement).value;
+    manager.remotePeerId = id;
+  }
+
+  const handleInputChangesWithDebounce = debounce(handleInputChanges, 600);
+
+  const remotePeerIdElement = document.getElementById('remote-peer-id');
+  remotePeerIdElement?.addEventListener(
+    'keyup',
+    handleInputChangesWithDebounce
+  );
+  remotePeerIdElement?.addEventListener(
+    'change',
+    handleInputChangesWithDebounce
+  );
+
+  async function startCall() {
+    try {
+      const captureStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          displaySurface: 'browser',
+        },
+      });
+
+      const videoElement = document.getElementById('video') as HTMLMediaElement;
+      videoElement.srcObject = captureStream;
+      videoElement.play();
+
+      manager.peer?.call(manager.remotePeerId!, captureStream);
+
+      return captureStream;
+    } catch (err) {
+      console.error(`Error: ${err}`);
+    }
+  }
+
+  const startCallWithDebounce = debounce(startCall, 600);
+
+  const callButton = document.getElementById('call');
+  callButton?.addEventListener('click', startCallWithDebounce);
+</script>
+
+<style>
+  main {
+    margin: auto;
+    padding: 1rem;
+    width: 800px;
+    max-width: calc(100% - 2rem);
+    color: white;
+    font-size: 20px;
+    line-height: 1.6;
+  }
+  .astro-a {
+    position: absolute;
+    top: -32px;
+    left: 50%;
+    transform: translatex(-50%);
+    width: 220px;
+    height: auto;
+    z-index: -1;
+  }
+  h1 {
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    margin-bottom: 1em;
+  }
+  .text-gradient {
+    background-image: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 400%;
+    background-position: 0%;
+  }
+  .instructions {
+    margin-bottom: 2rem;
+    border: 1px solid rgba(var(--accent-light), 25%);
+    background: linear-gradient(
+      rgba(var(--accent-dark), 66%),
+      rgba(var(--accent-dark), 33%)
+    );
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+  .instructions code {
+    font-size: 0.8em;
+    font-weight: bold;
+    background: rgba(var(--accent-light), 12%);
+    color: rgb(var(--accent-light));
+    border-radius: 4px;
+    padding: 0.3em 0.4em;
+  }
+  .instructions strong {
+    color: rgb(var(--accent-light));
+  }
+  .link-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+    gap: 2rem;
+    padding: 0;
+  }
+  img:hover {
+    cursor: pointer;
+  }
+</style>
