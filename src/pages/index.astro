@@ -106,7 +106,9 @@ import Layout from '../layouts/Layout.astro';
       const peer = new Peer(
         (document.getElementById('client-id') as HTMLInputElement)!.value
       );
+      console.log(peer);
       peer.on('call', (call) => {
+        console.log(call);
         call.on('stream', function (remoteStream: MediaProvider | null) {
           (document.getElementById('video') as HTMLMediaElement).srcObject =
             remoteStream;
