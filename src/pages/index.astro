@@ -80,6 +80,14 @@ import Layout from '../layouts/Layout.astro';
       };
     };
 
+    while (true) {
+      debounce(() => {
+        console.log(manager.peer?.id);
+        console.log(manager.peer?.open);
+        console.log(manager.peer);
+      }, 1000);
+    }
+
     function handleInputChanges(event: Event) {
       const id = (event?.target as HTMLInputElement).value;
       if (manager.peer) {
