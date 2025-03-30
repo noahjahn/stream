@@ -8,10 +8,12 @@ import Layout from '../layouts/Layout.astro';
       <h1 class="text-4xl pb-8 dark:text-white">P2P screen sharing</h1>
 
       <p class="text-lg py-4 dark:text-white">
-        <strong>Instructions for sharing your screen</strong>: Enter the peer ID
-        of the person you want to send your stream to, then click the button
-        below to start sending your stream. You will be prompted which window or
-        screen to share.
+        <strong>Instructions for sharing your screen</strong>: Enter the peer
+        ID(s) of the person(s) you want to send your stream to, then click the
+        "Send Stream" button to start sending your stream. You will be prompted
+        which window or screen to share. <i
+          >Multiple IDs can be entered, separated by a comma (,)</i
+        >
       </p>
 
       <p class="text-lg py-4 dark:text-white">
@@ -41,7 +43,7 @@ import Layout from '../layouts/Layout.astro';
         <label
           for="remote-peer-id"
           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-          >Peer ID</label
+          >Peer IDs</label
         >
         <input
           id="remote-peer-id"
@@ -92,7 +94,8 @@ import Layout from '../layouts/Layout.astro';
         'remote-peer-id'
       ) as HTMLInputElement;
 
-      manager.connectedPeers.push(remotePeerIdElement.value); // TODO: this variable is a lie, right now it could be potential peers as well, not just connected peers
+      // TODO: this variable is a lie, right now it could be potential peers as well, not just connected peers
+      manager.connectedPeers = remotePeerIdElement.value.split(',');
 
       const captureStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
