@@ -1,16 +1,16 @@
 import { Peer } from 'peerjs';
 import { v4 as uuid } from 'uuid';
 
-type AcceptCallback = (mediaStream: MediaStream) => unknown;
+type AcceptedCallback = (mediaStream: MediaStream) => unknown;
 
 type Manager = {
   id: string;
   peer: Peer | undefined;
   connectedPeers: string[];
-  setup: (accept: AcceptCallback) => Manager;
+  setup: (accept: AcceptedCallback) => Manager;
 };
 
-function setup(this: Manager, accept: AcceptCallback): Manager {
+function setup(this: Manager, accepted: AcceptedCallback): Manager {
   const manager = this! as Manager;
   this.peer?.on('call', (call) => {
     call.answer();
@@ -20,7 +20,7 @@ function setup(this: Manager, accept: AcceptCallback): Manager {
           `You are receiving a stream from ${call.peer}, do you want to view their stream (only accept someone you trust)?`
         )
       ) {
-        accept(remoteStream);
+        accepted(remoteStream);
       }
     });
   });
