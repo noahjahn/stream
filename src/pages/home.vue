@@ -75,7 +75,11 @@ const startCall = async () => {
 
 const startCallWithDebounce = debounce(startCall, 600);
 
+console.log("ismounted", isMounted.value);
+
 if (isMounted.value) {
+  init();
+
   const callButton = document.getElementById("call");
   callButton?.addEventListener("click", startCallWithDebounce);
 }
