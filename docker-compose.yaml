@@ -1,10 +1,10 @@
 services:
-  node:
-    image: node:latest
-    user: node
-    working_dir: /home/node/app
-    command: npm run dev
+  bun:
+    image: bun:latest
+    user: bun
+    working_dir: /home/bun/app
+    command: bun run dev
     ports:
       - 4321:4321
     volumes:
-      - ./:/home/node/app
+      - ./:/home/bun/app

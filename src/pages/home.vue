@@ -2,6 +2,9 @@
 import { Peer } from "peerjs";
 import { Button } from "components/ui/button";
 import { v4 as uuid } from "uuid";
+import { useMounted } from "@vueuse/core";
+
+const isMounted = useMounted();
 
 const manager = {
   peer: undefined as Peer | undefined,
@@ -9,14 +12,14 @@ const manager = {
   remotePeerId: undefined as string | undefined,
 };
 
-function init() {
+const init = () => {
   manager.peer = new Peer(manager.clientPeerId);
   (document.getElementById("client-peer-id") as HTMLInputElement).value =
     manager.clientPeerId;
 
   manager.peer.on("call", (call) => {
     call.answer();
-    call.on("stream", function (remoteStream) {
+    call.on("stream", (remoteStream) => {
       if (
         confirm(
           `You are receiving a stream from ${call.peer}, do you want to view their stream (only accept someone you trust)?`,
@@ -31,9 +34,7 @@ function init() {
       }
     });
   });
-}
-
-init();
+};
 
 const debounce = (callback: Function, wait: number) => {
   let timeoutId: number | undefined = undefined;
@@ -45,10 +46,10 @@ const debounce = (callback: Function, wait: number) => {
   };
 };
 
-function handleInputChanges(event: Event) {
+const handleInputChanges = (event: Event) => {
   const id = (event?.target as HTMLInputElement).value;
   manager.remotePeerId = id;
-}
+};
 
 const handleInputChangesWithDebounce = debounce(handleInputChanges, 600);
 
@@ -56,7 +57,7 @@ const remotePeerIdElement = document.getElementById("remote-peer-id");
 remotePeerIdElement?.addEventListener("keyup", handleInputChangesWithDebounce);
 remotePeerIdElement?.addEventListener("change", handleInputChangesWithDebounce);
 
-async function startCall() {
+const startCall = async () => {
   try {
     const captureStream = await navigator.mediaDevices.getDisplayMedia({
       video: {
@@ -70,12 +71,14 @@ async function startCall() {
   } catch (err) {
     console.error(`Error: ${err}`);
   }
-}
+};
 
 const startCallWithDebounce = debounce(startCall, 600);
 
-const callButton = document.getElementById("call");
-callButton?.addEventListener("click", startCallWithDebounce);
+if (isMounted.value) {
+  const callButton = document.getElementById("call");
+  callButton?.addEventListener("click", startCallWithDebounce);
+}
 </script>
 
 <template>
