@@ -62,41 +62,19 @@ import Layout from '../layouts/Layout.astro';
     <video id="video"></video>
   </main>
 </Layout>
+
 <script>
-  import { Peer } from 'peerjs';
-  import { v4 as uuid } from 'uuid';
+  import app from '../services/app';
 
-  const manager = {
-    peer: undefined as Peer | undefined,
-    clientPeerId: uuid(),
-    remotePeerId: undefined as string | undefined,
-  };
+  const manager = app().setup((mediaStream) => {
+    const videoElement = document.getElementById('video') as HTMLMediaElement;
 
-  function init() {
-    manager.peer = new Peer(manager.clientPeerId);
-    (document.getElementById('client-peer-id') as HTMLInputElement).value =
-      manager.clientPeerId;
+    videoElement.srcObject = mediaStream;
+    videoElement.play();
+  });
 
-    manager.peer.on('call', (call) => {
-      call.answer();
-      call.on('stream', function (remoteStream) {
-        if (
-          confirm(
-            `You are receiving a stream from ${call.peer}, do you want to view their stream (only accept someone you trust)?`
-          )
-        ) {
-          const videoElement = document.getElementById(
-            'video'
-          ) as HTMLMediaElement;
-
-          videoElement.srcObject = remoteStream;
-          videoElement.play();
-        }
-      });
-    });
-  }
-
-  init();
+  (document.getElementById('client-peer-id') as HTMLInputElement).value =
+    manager.id;
 
   const debounce = (callback: Function, wait: number) => {
     let timeoutId: number | undefined = undefined;
@@ -108,32 +86,23 @@ import Layout from '../layouts/Layout.astro';
     };
   };
 
-  function handleInputChanges(event: Event) {
-    const id = (event?.target as HTMLInputElement).value;
-    manager.remotePeerId = id;
-  }
-
-  const handleInputChangesWithDebounce = debounce(handleInputChanges, 600);
-
-  const remotePeerIdElement = document.getElementById('remote-peer-id');
-  remotePeerIdElement?.addEventListener(
-    'keyup',
-    handleInputChangesWithDebounce
-  );
-  remotePeerIdElement?.addEventListener(
-    'change',
-    handleInputChangesWithDebounce
-  );
-
   async function startCall() {
     try {
+      const remotePeerIdElement = document.getElementById(
+        'remote-peer-id'
+      ) as HTMLInputElement;
+
+      manager.connectedPeers.push(remotePeerIdElement.value); // TODO: this variable is a lie, right now it could be potential peers as well, not just connected peers
+
       const captureStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           displaySurface: 'browser',
         },
       });
 
-      manager.peer?.call(manager.remotePeerId!, captureStream);
+      manager.connectedPeers.forEach((peer) => {
+        manager.peer?.call(peer, captureStream);
+      });
 
       return captureStream;
     } catch (err) {
