@@ -1,10 +1,10 @@
 services:
   bun:
-    image: bun:latest
+    image: oven/bun:latest
     user: bun
     working_dir: /home/bun/app
     command: bun run dev
     ports:
-      - 4321:4321
+      - 5173:5173
     volumes:
       - ./:/home/bun/app
