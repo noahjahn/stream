@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import app from '../services/app'
 import type { Manager } from '../services/app'
 import debounce from '../utils/debounce'
+import { useClipboard } from '@vueuse/core'
 
 const thisPeerId = ref('')
 const remotePeerIds = ref('')
@@ -50,6 +51,8 @@ onMounted(() => {
     }, 600),
   )
 })
+
+const { text, copy } = useClipboard({ source: thisPeerId })
 </script>
 
 <template>
@@ -80,8 +83,9 @@ onMounted(() => {
           v-model="thisPeerId"
           type="text"
           class="w-full bg-zinc-100 border border-zinc-400 text-sm rounded-lg block p-2.5 cursor-not-allowed dark:bg-zinc-900 dark:border-zinc-400 dark:placeholder-gray-400 dark:text-white"
-          disabled
+          readonly
           autocomplete="off"
+          @mousedown="copy(thisPeerId)"
         />
       </div>
       <div class="w-full md:w-8/12">
@@ -98,6 +102,9 @@ onMounted(() => {
           autocomplete="off"
         />
       </div>
+    </div>
+    <div v-if="text" class="mb-4 pl-2">
+      <p class="text-slate-900 text-xs dark:text-white">Copied ID to clipboard!</p>
     </div>
     <div class="w-full md:w-8/12">
       <button
