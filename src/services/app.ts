@@ -37,7 +37,7 @@ function init(): Manager {
     }
 }
 
-function app(manager?: Manager | undefined) {
+function app(manager?: Manager) {
     return manager || init()
 }
 
