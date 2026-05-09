@@ -6,6 +6,7 @@ import debounce from '../utils/debounce'
 
 const thisPeerId = ref('')
 const remotePeerIds = ref('')
+const errorMessage = ref('')
 
 async function startCall(manager: Manager) {
     try {
@@ -29,6 +30,7 @@ async function startCall(manager: Manager) {
 
         return captureStream
     } catch (err) {
+        errorMessage.value = err.message
         console.error(`Error: ${err}`)
     }
 }
@@ -99,13 +101,20 @@ onMounted(() => {
                 />
             </div>
         </div>
-        <div class="w-full md:w-8/12">
+        <div class="w-full">
             <button
                 id="call"
                 class="py-1 px-8 m-auto border border-foreground rounded-lg dark:text-white dark:border-white"
             >
                 Send stream
             </button>
+        </div>
+        <div
+            v-if="errorMessage"
+            class="my-4 rounded-2xl border-2 border-rose-800 bg-rose-200 text-rose-800 p-4"
+        >
+            <p class="font-bold">An error occurred. Here are the details:</p>
+            <p>{{ errorMessage }}</p>
         </div>
         <video id="video"></video>
     </main>
