@@ -1,16 +1,15 @@
 {
-  "name": "nobey-stream",
+  "name": "stream",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "vite build",
     "preview": "vite preview",
-    "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix",
-    "lint": "run-s lint:*",
+    "lint": "npm run lint:oxlint && npm run lint:eslint",
     "format": "prettier --write src/"
   },
   "dependencies": {
