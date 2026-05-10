@@ -1,23 +1,35 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import app from '../services/app'
-import type { Manager } from '../services/app'
-import debounce from '../utils/debounce'
+import debounce from '@/utils/debounce'
 import { useClipboard } from '@vueuse/core'
+import { useApp } from '@/state/app'
+import type { MediaConnection } from 'peerjs'
+import ReceivingCall from '@/components/ReceivingCall.vue'
+import MissingValueError from '@/errors/missing-value-error'
+import MissingCallerError from '@/errors/missing-caller-error'
+import Media from '@/components/Media.vue'
 
-const thisPeerId = ref('')
+const app = useApp()
+
 const remotePeerIds = ref('')
+
 const errorMessage = ref('')
 
-async function startCall(manager: Manager) {
+const receivingCall = ref(false)
+const incomingCallPeerId = ref('')
+const incomingMediaStream = ref<MediaStream | undefined>()
+const incomingCall = ref<MediaConnection | undefined>()
+
+const displayVideo = ref(false)
+
+async function startCall() {
     try {
         if (!remotePeerIds.value) {
-            alert('Please enter at least one peer ID')
-            return
+            throw new MissingValueError('Peer ID')
         }
 
         // TODO: this variable is a lie, right now it could be potential peers as well, not just connected peers
-        manager.connectedPeers = remotePeerIds.value.split(',')
+        app.value.connectedPeers = remotePeerIds.value.split(',')
 
         const captureStream = await navigator.mediaDevices.getDisplayMedia({
             video: {
@@ -25,36 +37,65 @@ async function startCall(manager: Manager) {
             },
         })
 
-        manager.connectedPeers.forEach((peer) => {
-            manager.peer?.call(peer, captureStream)
+        app.value.connectedPeers.forEach((peer) => {
+            app.value.peer?.call(peer, captureStream, {
+                metadata: {
+                    id: app.value.id,
+                },
+            })
         })
 
         return captureStream
-    } catch (err) {
-        errorMessage.value = err.message
-        console.error(`Error: ${err}`)
+    } catch (error) {
+        if (error instanceof Error) {
+            errorMessage.value = error.message
+        }
+        console.error(`Error: ${error}`)
     }
 }
 
-onMounted(() => {
-    const manager = app().setup((mediaStream) => {
-        const videoElement = document.getElementById('video') as HTMLMediaElement
+function answerCall(call: MediaConnection) {
+    call.answer()
+    call.on('stream', function (mediaStream) {
+        displayVideo.value = true
+        incomingMediaStream.value = mediaStream
+    })
+}
 
-        videoElement.srcObject = mediaStream
-        videoElement.play()
+function handleApprove() {
+    receivingCall.value = false
+
+    if (!incomingCall.value) {
+        throw new MissingCallerError()
+    }
+
+    answerCall(incomingCall.value)
+}
+
+function handleDeny() {
+    receivingCall.value = false
+    incomingCall.value = undefined
+    displayVideo.value = false
+    incomingMediaStream.value = undefined
+}
+
+onMounted(() => {
+    app.value.peer.on('call', (call: MediaConnection) => {
+        incomingCallPeerId.value = call.metadata?.id
+        receivingCall.value = true
+        incomingCall.value = call
     })
 
-    thisPeerId.value = manager.id
-
+    // TODO: use vue @click event
     document.getElementById('call')?.addEventListener(
         'click',
         debounce(() => {
-            startCall(manager)
+            startCall()
         }, 600),
     )
 })
 
-const { text, copy } = useClipboard({ source: thisPeerId })
+const { copy } = useClipboard({ source: app.value.id })
 </script>
 
 <template>
@@ -81,13 +122,14 @@ const { text, copy } = useClipboard({ source: thisPeerId })
                 <label for="thisClientId" class="block mb-2 text-sm font-medium dark:text-white"
                     >Your ID</label
                 >
+                <!-- TODO: the mouse event won't fire on most browsers because the input is disabled. Create a separate copy button instead -->
                 <input
-                    v-model="thisPeerId"
+                    v-model="app.id"
                     type="text"
                     class="w-full bg-zinc-100 border border-zinc-400 text-sm rounded-lg block p-2.5 cursor-not-allowed dark:bg-zinc-900 dark:border-zinc-400 dark:placeholder-gray-400 dark:text-white"
                     disabled
                     autocomplete="off"
-                    @mousedown="copy(thisPeerId)"
+                    @mousedown="copy(app.id)"
                 />
             </div>
             <div class="w-full md:w-8/12">
@@ -120,6 +162,12 @@ const { text, copy } = useClipboard({ source: thisPeerId })
             <p class="font-bold">An error occurred. Here are the details:</p>
             <p>{{ errorMessage }}</p>
         </div>
-        <video id="video"></video>
+        <Media v-if="displayVideo" :id="incomingCallPeerId" :src-object="incomingMediaStream" />
+        <ReceivingCall
+            v-if="receivingCall"
+            :remote-peer-id="incomingCallPeerId"
+            @approve="handleApprove"
+            @deny="handleDeny"
+        />
     </main>
 </template>
