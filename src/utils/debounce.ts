@@ -1,3 +1,4 @@
+// TODO: do thing, then wait. NOT wait, then do thing
 function debounce(callback: (...args: unknown[]) => unknown, wait: number) {
     let timeoutId: number | undefined = undefined
     return (...args: unknown[]) => {
