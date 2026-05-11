@@ -17,6 +17,9 @@ Get started: `docker compose run --rm node npm install && docker compose up`
 - Provide recommendations for share and receive settings based on client bandwidth
 - Configure own P2P broker server
 - Video calling in addition to screen sharing
-- Better call UI
 - Voice calling
 - End to End encryption
+
+### In progress
+
+- Better call UI
