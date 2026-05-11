@@ -6,6 +6,8 @@ defineProps({
         required: true,
     },
 })
+
+
 </script>
 
 <template>
@@ -17,14 +19,14 @@ defineProps({
         <div class="flex justify-end-safe gap-2">
             <button
                 id="deny"
-                class="py-1 px-8 border rounded-lg border-rose-800 text-rose-800 bg-rose-200"
+                class="py-1 cursor-pointer px-8 border rounded-lg border-rose-800 text-rose-800 bg-rose-200"
                 @click="$emit('deny')"
             >
                 Deny
             </button>
             <button
                 id="approve"
-                class="py-1 px-8 border rounded-lg border-emerald-800 text-emerald-800 bg-emerald-200"
+                class="py-1 cursor-pointer px-8 border rounded-lg border-emerald-800 text-emerald-800 bg-emerald-200"
                 @click="$emit('approve')"
             >
                 Approve

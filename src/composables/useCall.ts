@@ -1,21 +1,15 @@
 import { ref } from 'vue'
 import type { MediaConnection } from 'peerjs'
 
-type Call = {
+export interface Call {
     id: string
-    mediaConnection: MediaConnection
+    mediaConnection: Omit<MediaConnection, 'provider'>
     mediaStreams: Array<MediaStream>
     isAnswered?: boolean
 }
 
-type CallIndex = {
-    [x: string]: Call
-}
-
-const calls = ref<CallIndex>({})
+const calls = ref<Record<string, Call>>({})
 
 export function useCall() {
     return calls
 }
-
-export type { Call }

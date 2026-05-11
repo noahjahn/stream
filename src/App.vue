@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useApp } from '@/state/app'
-import type { MediaConnection } from 'peerjs'
+import { useApp } from '@/composables/useApp'
 import ReceivingCall from './components/ReceivingCall.vue'
 import { router } from './routing/routes'
-import { useCall, type Call } from './state/call'
+import { useCall } from '@/composables/useCall'
+import type { Call } from '@/composables/useCall'
 import MissingCallerError from './errors/missing-caller-error'
 
 const app = useApp()
@@ -17,8 +17,7 @@ function handleApprove() {
 
     const { id } = app.value.incomingCall
 
-    // TODO: why do I have to explicity define the type here?
-    call.value[id] = app.value.incomingCall as Call
+    call.value[id] = app.value.incomingCall
 
     app.value.incomingCall = undefined
     router.push('call')
@@ -29,11 +28,11 @@ function handleDeny() {
 }
 
 onMounted(() => {
-    app.value.peer.on('call', (call: MediaConnection) => {
-        const id = call.metadata?.id as string
+    app.value.peer.on('call', (mediaConnection: Call['mediaConnection']) => {
+        const id = mediaConnection.metadata?.id as string
         app.value.incomingCall = {
             id,
-            mediaConnection: call,
+            mediaConnection,
             mediaStreams: [],
         }
     })

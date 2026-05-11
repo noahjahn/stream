@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import Video from '@/components/Video.vue'
-import { useCall } from '@/state/call'
-import { onMounted, createApp, ref } from 'vue'
+import { useCall } from '@/composables/useCall'
+import { onMounted, createApp, useTemplateRef } from 'vue'
 
 const calls = useCall()
-const videos = ref()
+const videos = useTemplateRef('videos')
 
 onMounted(() => {
     Object.keys(calls.value).forEach((id) => {
@@ -14,7 +14,7 @@ onMounted(() => {
             call.mediaConnection.answer()
         }
 
-        call.mediaConnection.on('stream', function (mediaStream) {
+        call.mediaConnection.on('stream', (mediaStream) =>{
             call.mediaStreams.push(mediaStream)
 
             // TODO: I'm not happy with this, but is required for a race condition!
@@ -22,12 +22,15 @@ onMounted(() => {
                 mediaStream,
             })
 
-            VideoComponent.mount(videos.value)
+            if (!videos.value) return
+
+            VideoComponent.mount(videos.value) 
         })
     })
 })
+
 </script>
 
 <template>
-    <div ref="videos" class="grid grid-cols-2 gap-4"></div>
+    <div ref="videos" class="grid grid-cols-2 gap-4" />
 </template>

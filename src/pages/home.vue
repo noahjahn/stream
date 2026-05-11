@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import debounce from '@/utils/debounce'
 import { useClipboard } from '@vueuse/core'
-import { useApp } from '@/state/app'
+import { useApp } from '@/composables/useApp'
 import MissingValueError from '@/errors/missing-value-error'
 
 const app = useApp()

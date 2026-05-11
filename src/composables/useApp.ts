@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { Peer } from 'peerjs'
 import { v4 as uuid } from 'uuid'
-import type { Call } from './call'
+import type { Call } from './useCall'
 
 type App = {
     id: string
@@ -17,6 +17,7 @@ function init(): App {
         id,
         peer: new Peer(id),
         connectedPeers: [],
+
     }
 }
 
