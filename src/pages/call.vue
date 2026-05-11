@@ -18,11 +18,11 @@ onMounted(() => {
             call.mediaStreams.push(mediaStream)
 
             // TODO: I'm not happy with this, but is required for a race condition!
-            const MediaComponent = createApp(Video, {
+            const VideoComponent = createApp(Video, {
                 mediaStream,
             })
 
-            MediaComponent.mount(videos.value)
+            VideoComponent.mount(videos.value)
         })
     })
 })
