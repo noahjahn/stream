@@ -17,7 +17,6 @@ function init(): App {
         id,
         peer: new Peer(id),
         connectedPeers: [],
-
     }
 }
 

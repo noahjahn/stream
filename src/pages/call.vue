@@ -14,7 +14,7 @@ onMounted(() => {
             call.mediaConnection.answer()
         }
 
-        call.mediaConnection.on('stream', (mediaStream) =>{
+        call.mediaConnection.on('stream', (mediaStream) => {
             call.mediaStreams.push(mediaStream)
 
             // TODO: I'm not happy with this, but is required for a race condition!
@@ -24,11 +24,10 @@ onMounted(() => {
 
             if (!videos.value) return
 
-            VideoComponent.mount(videos.value) 
+            VideoComponent.mount(videos.value)
         })
     })
 })
-
 </script>
 
 <template>
