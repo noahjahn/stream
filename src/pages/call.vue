@@ -2,6 +2,7 @@
 import Video from '@/components/Video.vue'
 import { useCall } from '@/composables/useCall'
 import { onMounted } from 'vue'
+import { router } from '@/routing/routes'
 
 const calls = useCall()
 
@@ -18,6 +19,15 @@ onMounted(() => {
         })
     })
 })
+
+function endCall() {
+    Object.keys(calls.value).forEach((id) => {
+        const call = calls.value[id]
+        call.mediaConnection.close()
+    })
+
+    router.push({ name: 'home' })
+}
 </script>
 
 <template>
@@ -27,5 +37,14 @@ onMounted(() => {
             :key="id"
             :media-stream="calls[id].mediaStreams[0]"
         />
+    </div>
+    <div class="flex justify-center">
+        <button
+            id="deny"
+            class="py-1 cursor-pointer px-8 border rounded-lg border-rose-800 text-rose-800 bg-rose-200"
+            @click="endCall"
+        >
+            <i class="fa-solid fa-phone-slash"></i> End call
+        </button>
     </div>
 </template>
