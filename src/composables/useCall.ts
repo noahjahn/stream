@@ -1,9 +1,10 @@
 import { ref } from 'vue'
-import type { MediaConnection } from 'peerjs'
+import type { DataConnection, MediaConnection } from 'peerjs'
 
 export interface Call {
     id: string
-    mediaConnection: Omit<MediaConnection, 'provider'>
+    mediaConnection?: Omit<MediaConnection, 'provider'>
+    dataConnection?: Omit<DataConnection, 'provider'>
     mediaStreams: Array<MediaStream>
     isAnswered?: boolean
 }

@@ -11,10 +11,10 @@ onMounted(() => {
         const call = calls.value[id]
 
         if (!call.isAnswered) {
-            call.mediaConnection.answer()
+            call.mediaConnection?.answer()
         }
 
-        call.mediaConnection.on('stream', (mediaStream) => {
+        call.mediaConnection?.on('stream', (mediaStream) => {
             call.mediaStreams.push(mediaStream)
         })
     })
@@ -23,7 +23,8 @@ onMounted(() => {
 function endCall() {
     Object.keys(calls.value).forEach((id) => {
         const call = calls.value[id]
-        call.mediaConnection.close()
+        call.mediaConnection?.close()
+        call.dataConnection?.close()
     })
 
     router.push({ name: 'home' })

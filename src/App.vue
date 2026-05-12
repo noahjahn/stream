@@ -20,6 +20,13 @@ function handleApprove() {
     call.value[id] = app.value.incomingCall
 
     app.value.incomingCall = undefined
+
+    app.value.peer.connect(id, {
+        metadata: {
+            id: app.value.id,
+        },
+    })
+
     router.push('call')
 }
 
@@ -29,12 +36,23 @@ function handleDeny() {
 
 onMounted(() => {
     app.value.peer.on('call', (mediaConnection: Call['mediaConnection']) => {
-        const id = mediaConnection.metadata?.id as string
+        const id = mediaConnection?.metadata?.id as string
         app.value.incomingCall = {
             id,
             mediaConnection,
             mediaStreams: [],
         }
+    })
+
+    app.value.peer.on('connection', (dataConnection: Call['dataConnection']) => {
+        const id = dataConnection?.metadata?.id as string
+        call.value[id] = {
+            id,
+            dataConnection,
+            mediaStreams: [],
+        }
+
+        router.push('call')
     })
 })
 </script>

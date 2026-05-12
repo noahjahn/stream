@@ -27,6 +27,7 @@ async function startCall() {
         })
 
         app.value.connectedPeers.forEach((peer) => {
+            // TODO: this connection needs to stored in state so we can close it if the person starting the call ends the connection
             app.value.peer?.call(peer, captureStream, {
                 metadata: {
                     id: app.value.id,
