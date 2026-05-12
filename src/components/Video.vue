@@ -2,10 +2,7 @@
 import { useTemplateRef, watchEffect } from 'vue'
 
 const { mediaStream } = defineProps({
-    mediaStream: {
-        type: MediaStream,
-        required: true,
-    },
+    mediaStream: MediaStream,
 })
 
 const video = useTemplateRef('video')
