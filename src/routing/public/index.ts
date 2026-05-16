@@ -1,12 +1,18 @@
-import HomePage from '@/pages/home.vue'
+import Home from '@/pages/home.vue'
+import Call from '@/pages/call.vue'
 
 import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
     {
         path: '/',
-        name: 'Home',
-        component: HomePage,
+        name: 'home',
+        component: Home,
+    },
+    {
+        path: '/call',
+        name: 'call',
+        component: Call,
     },
 ]
 

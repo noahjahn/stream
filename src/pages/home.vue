@@ -2,25 +2,15 @@
 import { ref, onMounted } from 'vue'
 import debounce from '@/utils/debounce'
 import { useClipboard } from '@vueuse/core'
-import { useApp } from '@/state/app'
-import type { MediaConnection } from 'peerjs'
-import ReceivingCall from '@/components/ReceivingCall.vue'
+import { useApp } from '@/composables/useApp'
 import MissingValueError from '@/errors/missing-value-error'
-import MissingCallerError from '@/errors/missing-caller-error'
-import Media from '@/components/Media.vue'
+import Button from '@/components/Button.vue'
 
 const app = useApp()
 
 const remotePeerIds = ref('')
 
 const errorMessage = ref('')
-
-const receivingCall = ref(false)
-const incomingCallPeerId = ref('')
-const incomingMediaStream = ref<MediaStream | undefined>()
-const incomingCall = ref<MediaConnection | undefined>()
-
-const displayVideo = ref(false)
 
 async function startCall() {
     try {
@@ -38,6 +28,7 @@ async function startCall() {
         })
 
         app.value.connectedPeers.forEach((peer) => {
+            // TODO: this connection needs to stored in state so we can close it if the person starting the call ends the connection
             app.value.peer?.call(peer, captureStream, {
                 metadata: {
                     id: app.value.id,
@@ -54,38 +45,7 @@ async function startCall() {
     }
 }
 
-function answerCall(call: MediaConnection) {
-    call.answer()
-    call.on('stream', function (mediaStream) {
-        displayVideo.value = true
-        incomingMediaStream.value = mediaStream
-    })
-}
-
-function handleApprove() {
-    receivingCall.value = false
-
-    if (!incomingCall.value) {
-        throw new MissingCallerError()
-    }
-
-    answerCall(incomingCall.value)
-}
-
-function handleDeny() {
-    receivingCall.value = false
-    incomingCall.value = undefined
-    displayVideo.value = false
-    incomingMediaStream.value = undefined
-}
-
 onMounted(() => {
-    app.value.peer.on('call', (call: MediaConnection) => {
-        incomingCallPeerId.value = call.metadata?.id
-        receivingCall.value = true
-        incomingCall.value = call
-    })
-
     // TODO: use vue @click event
     document.getElementById('call')?.addEventListener(
         'click',
@@ -148,12 +108,7 @@ const { copy } = useClipboard({ source: app.value.id })
             </div>
         </div>
         <div class="w-full">
-            <button
-                id="call"
-                class="py-1 px-8 m-auto border border-foreground rounded-lg dark:text-white dark:border-white"
-            >
-                Send stream
-            </button>
+            <Button>Send Stream</Button>
         </div>
         <div
             v-if="errorMessage"
@@ -162,12 +117,5 @@ const { copy } = useClipboard({ source: app.value.id })
             <p class="font-bold">An error occurred. Here are the details:</p>
             <p>{{ errorMessage }}</p>
         </div>
-        <Media v-if="displayVideo" :id="incomingCallPeerId" :src-object="incomingMediaStream" />
-        <ReceivingCall
-            v-if="receivingCall"
-            :remote-peer-id="incomingCallPeerId"
-            @approve="handleApprove"
-            @deny="handleDeny"
-        />
     </main>
 </template>
