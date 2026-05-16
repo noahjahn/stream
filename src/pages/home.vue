@@ -4,6 +4,7 @@ import debounce from '@/utils/debounce'
 import { useClipboard } from '@vueuse/core'
 import { useApp } from '@/composables/useApp'
 import MissingValueError from '@/errors/missing-value-error'
+import Button from '@/components/Button.vue'
 
 const app = useApp()
 
@@ -107,12 +108,7 @@ const { copy } = useClipboard({ source: app.value.id })
             </div>
         </div>
         <div class="w-full">
-            <button
-                id="call"
-                class="py-1 px-8 m-auto border border-foreground rounded-lg dark:text-white dark:border-white"
-            >
-                Send stream
-            </button>
+            <Button>Send Stream</Button>
         </div>
         <div
             v-if="errorMessage"

@@ -3,6 +3,7 @@ import Video from '@/components/Video.vue'
 import { useCall } from '@/composables/useCall'
 import { onMounted } from 'vue'
 import { router } from '@/routing/routes'
+import Button from '@/components/Button.vue'
 
 const calls = useCall()
 
@@ -40,12 +41,8 @@ function endCall() {
         />
     </div>
     <div class="flex justify-center">
-        <button
-            id="deny"
-            class="py-1 cursor-pointer px-8 border rounded-lg border-rose-800 text-rose-800 bg-rose-200"
-            @click="endCall"
-        >
+        <Button state="failure" @click="endCall">
             <i class="fa-solid fa-phone-slash"></i> End call
-        </button>
+        </Button>
     </div>
 </template>
