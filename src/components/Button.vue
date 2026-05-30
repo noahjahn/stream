@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { PropType } from 'vue'
-export type ButtonState = 'success' | 'failure' | 'error'
+export type ButtonState = 'default' | 'success' | 'failure' | 'error'
 
-const props = defineProps({
-    state: {
-        type: String as PropType<ButtonState>,
-    },
-})
+interface ButtonProps {
+    state?: ButtonState
+}
 
-const { state } = props
+const { state = 'default' } = defineProps<ButtonProps>()
 
 const classes = ref('')
 
@@ -21,14 +18,13 @@ switch (state as ButtonState) {
     case 'error':
         classes.value = 'border-rose-800 text-rose-800 bg-rose-200'
         break
+    default:
+        classes.value = 'dark:text-white dark:border-zinc-300'
 }
 </script>
 
 <template>
-    <button
-        class="py-1 cursor-pointer px-8 border rounded-lg dark:text-white dark:border-zinc-300"
-        :class="classes"
-    >
+    <button class="py-1 cursor-pointer px-8 border rounded-lg" :class="classes">
         <slot />
     </button>
 </template>
