@@ -45,16 +45,6 @@ async function startCall() {
     }
 }
 
-onMounted(() => {
-    // TODO: use vue @click event
-    document.getElementById('call')?.addEventListener(
-        'click',
-        debounce(() => {
-            startCall()
-        }, 600),
-    )
-})
-
 const { copy } = useClipboard({ source: app.value.id })
 </script>
 
@@ -108,7 +98,7 @@ const { copy } = useClipboard({ source: app.value.id })
             </div>
         </div>
         <div class="w-full">
-            <Button>Send Stream</Button>
+            <Button @click="startCall">Send Stream</Button>
         </div>
         <div
             v-if="errorMessage"
