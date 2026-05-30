@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import Modal from './base/Modal.vue'
+import Button from './Button.vue'
+
 defineProps({
     remotePeerId: {
         type: String,
@@ -15,20 +17,8 @@ defineProps({
         <p>Do you want to receive their stream?</p>
         <p>🔒 <i>Please, only accept calls from people you trust</i></p>
         <div class="flex justify-end-safe gap-2">
-            <button
-                id="deny"
-                class="py-1 px-8 border rounded-lg border-rose-800 text-rose-800 bg-rose-200"
-                @click="$emit('deny')"
-            >
-                Deny
-            </button>
-            <button
-                id="approve"
-                class="py-1 px-8 border rounded-lg border-emerald-800 text-emerald-800 bg-emerald-200"
-                @click="$emit('approve')"
-            >
-                Approve
-            </button>
+            <Button state="failure" @click="$emit('deny')"> Deny </Button>
+            <Button state="success" @click="$emit('approve')"> Approve </Button>
         </div>
     </Modal>
 </template>
